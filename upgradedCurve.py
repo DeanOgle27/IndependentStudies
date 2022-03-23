@@ -238,10 +238,14 @@ def getCurve(covMat, returns, method='slsqp'):
     failedXs = []
     failedYs = []
     counter = 0
-    numPts = 200
+    numPts = 10
     startingPoint = None
-    for i in np.linspace(np.min(returns), np.max(returns), numPts):
-        res = solveOptimalRisk(covMat, returns, i, method=method, startingPoint=startingPoint)
+    dataDict = {}
+    returns = np.linspace(np.min(returns), np.max(returns), numPts)
+    
+    # Pack data into data dict
+    for ret in returns:
+        res = solveOptimalRisk(covMat, returns, ret, method=method, startingPoint=startingPoint)
         if(hasattr(res, 'x')):
             startingPoint=res.x
         else:
@@ -249,11 +253,27 @@ def getCurve(covMat, returns, method='slsqp'):
         counter += 1
         if(res.success):
             xs.append(res.fun)
-            ys.append(i)
+            ys.append(ret)
         else:
             failedXs.append(res.fun)
-            failedYs.append(i)
+            failedYs.append(ret)
+        dataDict[counter] = {
+            'finalPoint': startingPoint,
+            'success': res.success,
+            'x': res.fun,
+            'y': ret
+        }
         print(f'{100 * counter / numPts : .2f}%; Success: {res.success} done')
+
+    secondPassDict = {}
+    # Second pass
+    for i in range(numPts):
+        counter = (numPts - 1 - i)
+        print(counter)
+        pass
+
+
+    # Unpack into xs, ys, failedXs, failedYs
     return xs, ys, failedXs, failedYs
 
 
