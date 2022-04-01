@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scipy.optimize
 import time
-
+from Markowitz.methods import get_cvx_opt_fixedRet
 # Done for return object in solveOptimalRisk
 class Object(object):
     pass
@@ -194,14 +194,14 @@ def solveOptimalRisk(covmat, rets, retBar, method='slsqp', startingPoint=None):
     # SLSQP method
     if(method == 'slsqp' or method == 'SLSQP'):
         # Sum to 1 constraint
-        sumToOne = {'type': 'ineq',
+        sumToOne = {'type': 'eq',
                 'fun': lambda x: 1-np.sum(x),
                 'jac': lambda x: -1*np.ones(len(x))
                 }
 
         # Expected return constraint
         sufficientReturn = {
-            'type': 'ineq',
+            'type': 'eq',
             'fun': lambda x: np.matmul(x.T, rets)[0] - retBar,
             'jac': lambda x: rets[:,0]
         }
@@ -212,13 +212,20 @@ def solveOptimalRisk(covmat, rets, retBar, method='slsqp', startingPoint=None):
 
     # Trust-constr method
     elif(method == 'trust-constr' or method=='TRUST-CONSTR' or method=='TRUSTCONSTR' or method=='trustconstr'):
-        linearSumToOne = scipy.optimize.LinearConstraint([1]*len(rets),0,1) # Sum of positions has to be between 0 and 1
+        linearSumToOne = scipy.optimize.LinearConstraint([1]*len(rets),1,1) # Sum of positions has to be 1
         linearReturns = scipy.optimize.LinearConstraint(rets[:,0],retBar,np.inf) # Return must be greater than the retBar
 
         #https://docs.scipy.org/doc/scipy/tutorial/optimize.html#trust-region-constrained-algorithm-method-trust-constr
         result = scipy.optimize.minimize(f, weights_init, method='trust-constr', jac=jac, hess=hess,constraints=[linearSumToOne, linearReturns], bounds=bounds)
         return result
 
+    elif(method == 'cvx' or method == 'CVX'):
+        x = np.array(get_cvx_opt_fixedRet(covmat, rets, retBar))[:,0]
+        print('X: ', x.shape)
+        retObj = Object()
+        retObj.success = True
+        retObj.fun = f(x)
+        return retObj
     else:
         print('ERROR: solveOptimalRisk: UNSUPPORTED METHOD ', method)
 
@@ -282,9 +289,13 @@ def plotOptimalCurve(xs, ys, variance, returns, tickers, failedXs=None, failedYs
             plt.savefig('newPlotImages/res.png', dpi=200)
         else:
             plt.savefig(f'newPlotImages/{saveFigName}', dpi=200)
-    else:
-        plt.show()
 
+
+def plotMonteCarlo():
+    data = np.load('frontier_5.npy')
+    xs5, ys5 = data[:,0], data[:,1]
+    plt.plot(xs5, ys5, label='Monte Carlo N=5')
+    plt.legend()
 
 def runSimWithNStocks(nStocks, method='slsqp'):
     print('Running Sim With N Stocks: ', nStocks)
@@ -297,8 +308,9 @@ def runSimWithNStocks(nStocks, method='slsqp'):
     reducedReturns = returns[0:nStocks]
 
     xs, ys, failedXs, failedYs = getCurve(reducedCovMat, reducedReturns, method=method)
-    plotOptimalCurve(xs, ys, variance[0:nStocks], returns[0:nStocks], tickers[0:nStocks], failedXs=failedXs, failedYs=failedYs, title=f'Num Stocks: {nStocks}, Method: {method}', saveFig=True, saveFigName=f'{method}_{nStocks}.png')
-
+    plotOptimalCurve(xs, ys, variance[0:nStocks], returns[0:nStocks], tickers[0:nStocks], failedXs=failedXs, failedYs=failedYs, title=f'Num Stocks: {nStocks}, Method: {method}', saveFig=False, saveFigName=f'{method}_{nStocks}.png')
+    plotMonteCarlo()
+    plt.show()
 
 if __name__ == '__main__':
 
@@ -309,9 +321,9 @@ if __name__ == '__main__':
     tickers = loadTickers()
     variance = np.diag(covMat)
 
-
-    for i in range(15):
-        runSimWithNStocks(5*(i+1), method='slsqp')
+    runSimWithNStocks(75, method='slsqp')
+    # for i in range(15):
+    #     runSimWithNStocks(5*(i+1), method='slsqp')
 
 
 

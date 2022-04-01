@@ -25,11 +25,11 @@ if __name__ == '__main__':
 
     data5Year = np.load('5Year.npy')
     # print(data5Year.shape)
-    #plt.figure('PCA Analysis')
-    # pca.runPCAAnalysis(data5Year)
-    #pca.runPCAAnalysisTestTrainSplit(data5Year, SPLIT_INDEX)
-    # plt.show()
-    pca.runPCA(data5Year, 15, printStats=True, printCorrels=True)
+    plt.figure('PCA Analysis')
+    pca.runPCAAnalysis(data5Year)
+    pca.runPCAAnalysisTestTrainSplit(data5Year, SPLIT_INDEX)
+    plt.show()
+    #pca.runPCA(data5Year, 15, printStats=True, printCorrels=True)
     # Create numpy array from dictionary
 
     # Dimension reduction with auto-encoder and de-coder

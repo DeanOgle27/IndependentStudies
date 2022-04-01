@@ -3,17 +3,32 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scipy.optimize
 import time
+import methods
 
 # Done for return object in solveOptimalRisk
 class Object(object):
     pass
 FPT_ERR_TOL = 10**-12
 
-# <Helper and Debug Functions>
-def printPortfolio(tickers, weights):
-    pass
+COVMAT = np.load('covmat.npy')
+RETS = np.load('returns.npy')
 
-# </Helper and Debug Functions>
+def getVariance(x):
+    res = np.matmul(np.matmul(x, COVMAT), x.T)
+    if(len(res.shape) == 2):
+        return res[0][0]
+    if(len(res.shape) == 1):
+        return res[0]
+    return res
+
+def getReturns(x):
+    res = np.matmul(x, RETS)
+    if(len(res.shape) == 2):
+        return res[0][0]
+    if(len(res.shape) == 1):
+        return res[0]
+    return res
+
 def loadTickers():
     f = open('./tickerList.txt', 'r')
     tickers = []
@@ -129,23 +144,23 @@ def solveOptimalRisk(covmat, rets, retBar, method='slsqp', startingPoint=None):
         retObj = Object()
         retObj.success = True
         retObj.fun = f(weights_init)
-        retObj.x = weights_init
         return retObj
 
     # No shorting allowed, no position size greater than portfolio
     bounds = scipy.optimize.Bounds([0] * len(rets), [1] * len(rets))
+    print('Initial Shape: ', weights_init.shape, ' FX: ', f(weights_init))
 
     # SLSQP method
     if(method == 'slsqp' or method == 'SLSQP'):
         # Sum to 1 constraint
-        sumToOne = {'type': 'ineq',
+        sumToOne = {'type': 'eq',
                 'fun': lambda x: 1-np.sum(x),
                 'jac': lambda x: -1*np.ones(len(x))
                 }
 
         # Expected return constraint
         sufficientReturn = {
-            'type': 'ineq',
+            'type': 'eq',
             'fun': lambda x: np.matmul(x.T, rets)[0] - retBar,
             'jac': lambda x: rets[:,0]
         }
@@ -156,7 +171,7 @@ def solveOptimalRisk(covmat, rets, retBar, method='slsqp', startingPoint=None):
 
     # Trust-constr method
     elif(method == 'trust-constr' or method=='TRUST-CONSTR' or method=='TRUSTCONSTR' or method=='trustconstr'):
-        linearSumToOne = scipy.optimize.LinearConstraint([1]*len(rets),0,1) # Sum of positions has to be between 0 and 1
+        linearSumToOne = scipy.optimize.LinearConstraint([1]*len(rets),1,1) # Sum of positions has to be 1
         linearReturns = scipy.optimize.LinearConstraint(rets[:,0],retBar,np.inf) # Return must be greater than the retBar
 
         #https://docs.scipy.org/doc/scipy/tutorial/optimize.html#trust-region-constrained-algorithm-method-trust-constr
@@ -174,76 +189,33 @@ def plotData(variance, returns, tickers):
     for var, ret, ticker in zip(variance, returns, tickers):
         plt.annotate(ticker, (var, ret))
     plt.show()
-
-
+    
 def getCurve(covMat, returns, method='slsqp'):
     xs = []
     ys = []
     failedXs = []
     failedYs = []
+    counter = 0
     numPts = 200
-    startingPoint = None
-    dataList = [0] * numPts
-    desiredRets = np.linspace(np.min(returns), np.max(returns), numPts)
-    for counter in range(numPts):
-        ret = desiredRets[counter]
-        res = solveOptimalRisk(covMat, returns, ret, method=method, startingPoint=startingPoint)
+    startingPoint = np.array(methods.get_global_minimum(COVMAT)).T[0,:]
+    for i in np.linspace(getReturns(startingPoint), np.max(returns), numPts):
+        res = solveOptimalRisk(covMat, returns, i, method=method, startingPoint=startingPoint)
         if(hasattr(res, 'x')):
             startingPoint=res.x
         else:
             startingPoint=None
-
+        counter += 1
         if(res.success):
             xs.append(res.fun)
-            ys.append(ret)
+            ys.append(i)
         else:
             failedXs.append(res.fun)
-            failedYs.append(ret)
-
-        dataList[counter] = {
-            'weights': res.x,
-            'risk': res.fun,
-            'success': res.success,
-            'ret': ret,
-        }
+            failedYs.append(i)
         print(f'{100 * counter / numPts : .2f}%; Success: {res.success} done')
-
-    # Try second pass as copy, and only update if better
-
-    secondPassDataList = [0] * numPts
-    secondPassDataList[numPts-1] = dataList[numPts-1] # Copy last one, generate the rest
-    # Second pass
-    for counter in reversed(range(numPts-1)):
-        dataObj = dataList[counter]
-        priorDatObj = dataList[(counter+1)]
-        res = solveOptimalRisk(covMat, returns, dataObj['ret'], method=method, startingPoint=priorDatObj['weights'])
-        secondPassDataList[counter] = {
-            'weights': res.x,
-            'risk': res.fun,
-            'success': res.success,
-            'ret': dataObj['ret'],
-        }
-    # Put data into xs, ys, failedXs, failedYs
-    return dataList, secondPassDataList
-
-def dataListToXsYsFaileds(dataList):
-    xs = []
-    ys = []
-    failedXs = []
-    failedYs = []
-    for i in range(len(dataList)):
-        dataObj = dataList[i]
-        if(dataObj['success']):
-            xs.append(dataObj['risk'])
-            ys.append(dataObj['ret'])
-        else:
-            failedXs.append(dataObj['risk'])
-            failedYs.append(dataObj['ret'])
     return xs, ys, failedXs, failedYs
 
-def plotOptimalCurve(dataList, variance, returns, tickers, title=None, saveFig=False, saveFigName=None):
-    xs, ys, failedXs, failedYs = dataListToXsYsFaileds(dataList)
 
+def plotOptimalCurve(xs, ys, variance, returns, tickers, failedXs=None, failedYs=None, title=None, saveFig=False, saveFigName=None):
     plt.figure()
     plt.plot(variance, returns, '+', label='Tickers')
     plt.xlabel('Variance')
@@ -268,10 +240,13 @@ def plotOptimalCurve(dataList, variance, returns, tickers, title=None, saveFig=F
             plt.savefig('newPlotImages/res.png', dpi=200)
         else:
             plt.savefig(f'newPlotImages/{saveFigName}', dpi=200)
-    else:
-        pass
-        #plt.show()
 
+
+def plotMonteCarlo():
+    data = np.load('frontier_5.npy')
+    xs5, ys5 = data[:,0], data[:,1]
+    plt.plot(xs5, ys5, label='Monte Carlo N=5')
+    plt.legend()
 
 def runSimWithNStocks(nStocks, method='slsqp'):
     print('Running Sim With N Stocks: ', nStocks)
@@ -283,21 +258,24 @@ def runSimWithNStocks(nStocks, method='slsqp'):
     reducedCovMat = covMat[0:nStocks, 0:nStocks]
     reducedReturns = returns[0:nStocks]
 
-    dataList, secondDataList = getCurve(reducedCovMat, reducedReturns, method=method)
-    
-    plotOptimalCurve(secondDataList, variance[0:nStocks], returns[0:nStocks], tickers[0:nStocks], title=f'Num Stocks: {nStocks}, Method: {method}', saveFig=False, saveFigName=f'{method}_{nStocks}.png')
-    plotOptimalCurve(dataList, variance[0:nStocks], returns[0:nStocks], tickers[0:nStocks], title=f'Num Stocks: {nStocks}, Method: {method}', saveFig=False, saveFigName=f'{method}_{nStocks}.png')
+    COVMAT = covMat[0:nStocks, 0:nStocks]
+    RETS = returns[0:nStocks]
 
+    xs, ys, failedXs, failedYs = getCurve(reducedCovMat, reducedReturns, method=method)
+    plotOptimalCurve(xs, ys, variance[0:nStocks], returns[0:nStocks], tickers[0:nStocks], failedXs=failedXs, failedYs=failedYs, title=f'Num Stocks: {nStocks}, Method: {method}', saveFig=False, saveFigName=f'{method}_{nStocks}.png')
+    plotMonteCarlo()
     plt.show()
-def testSim():
-    runSimWithNStocks(70, method='trust-constr')
-
 
 if __name__ == '__main__':
-    testSim()
 
+    nStocks = 75
+    # Load covariance, returns, tickers
+    covMat = np.load('covmat.npy')
+    returns = np.load('returns.npy')
+    tickers = loadTickers()
+    variance = np.diag(covMat)
 
-
+    runSimWithNStocks(75, method='trust-constr')
     # for i in range(15):
     #     runSimWithNStocks(5*(i+1), method='slsqp')
 

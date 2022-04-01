@@ -3,6 +3,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # Load list of tickers
+
+
 def loadTickers():
     f = open('./tickerList.txt', 'r')
     tickers = []
@@ -11,14 +13,8 @@ def loadTickers():
     f.close()
     return tickers
 
-# Plot historical data
-def plotHistData(ticker, data):
-    plt.figure()
-    plt.plot(data)
-    print('IN PLOT HIST DATA')
-    plt.title(ticker)
 
-# Save date, close, return for ticker
+# Save date, close, return for tickers
 def saveTickerCloses(ticker, show=False):
     histData = yf.Ticker(ticker).history(period='max', interval='1d')
     if('Adj Close' in histData.columns):
@@ -30,11 +26,6 @@ def saveTickerCloses(ticker, show=False):
     histData['Returns'] = histData['Close'] / histData['Closem1'] - 1
     histData = histData.drop(columns='Closem1')
     histData.to_csv(f'./historyData/{ticker}')
-
-    if show:
-        print("PLOTTING")
-        plotHistData(ticker, histData["Close"].values)
-
 
 # Load ticker data
 def loadTickerData(ticker):
@@ -50,13 +41,6 @@ def loadTickerData(ticker):
     f.close()
     return dates, prices, returns
 
-# Get mean and standard deviation of ticker
-def getMeanStdevOfStock(ticker):
-    dates, prices = loadTickerData(ticker)
-    returns = []
-    for i in range(len(prices)-1):
-        pass
-
 # Get correlation of two data series
 def correlation(data1, data2):
     if len(data1) < len(data2):
@@ -66,8 +50,6 @@ def correlation(data1, data2):
     return np.corrcoef(data1, data2)[1, 0]
 
 # Get covariance of two data series
-
-
 def covariance(data1, data2):
     if len(data1) < len(data2):
         data2 = data2[-len(data1):]
@@ -101,36 +83,11 @@ def minYearsDataDict(dataDict, minSamples):
 
     return dataDict
 
-
-def dataDictToNumpyArray(dataDict, minSamples):
-    # Each column is a ticker's data
-    npArray = None
-    for key in dataDict:
-        data = np.array(dataDict[key][-minSamples:])
-        if npArray is None:
-            npArray = data
-        else:
-            npArray = np.vstack([npArray, data])
-    return npArray.T
-
-def listFirstDate(ticker):
-    dates, _, _ = loadTickerData(ticker)
-    return dates[0].split('-')[0]
-
-def plotFirstDates(firstDates):
-    data = [int(firstDate) for firstDate in firstDates]
-    w = 2
-    plt.hist(data, bins=np.arange(min(data), max(data) + w, w))
-    plt.title('Starting Date of Historical Data')
-    plt.show()
-    print('Mean: ', np.mean(data))
-    print('Median: ', np.median(data))
-
 if __name__ == '__main__':
     tickers = loadTickers()
-    firstDates = []
     for ticker in tickers:
-        firstDate = listFirstDate(ticker)
-        print(f'{ticker}: {firstDate}')
-        firstDates.append(firstDate)
-    plotFirstDates(firstDates)
+        saveTickerCloses(ticker)
+    
+    dataDict = {}
+    for ticker in tickers:
+        loadTickerData(ticker)

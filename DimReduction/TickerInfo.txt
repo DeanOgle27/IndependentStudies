@@ -1,0 +1,72 @@
+AAPL,Technology,Consumer Electronics,2901099675648,0.004833482
+ACN,Technology,Information Technology Services,214552838144,0.011124482
+ADBE,Technology,Software—Infrastructure,217309806592,0
+ADI,Technology,Semiconductors,87121477632,0.016629452
+ADP,Industrials,Staffing & Employment Services,95669444608,0.017026005
+ADSK,Technology,Software—Application,48614031360,0
+AKAM,Technology,Software—Infrastructure,19419625472,0
+AMAT,Technology,Semiconductor Equipment & Materials,119965048832,0.00678733
+AMD,Technology,Semiconductors,194013855744,0
+ANET,Technology,Computer Hardware,42465787904,0
+ANSS,Technology,Software—Application,27875328000,0
+APH,Technology,Electronic Components,45944688640,0.008208376
+AVGO,Technology,Semiconductors,257662058496,0.02400736
+BR,Technology,Information Technology Services,18197903360,0.015430531
+CDNS,Technology,Software—Application,45461585920,0
+CDW,Technology,Information Technology Services,24130686976,0.009394341
+CRM,Technology,Software—Application,212790607872,0
+CSCO,Technology,Communication Equipment,232841232384,0.026585236
+CTSH,Technology,Information Technology Services,47937253376,0.010676157
+CTXS,Technology,Software—Application,12778909696,0.014585592
+DXC,Technology,Information Technology Services,8092221440,0
+ENPH,Technology,Solar,26338512896,0
+EPAM,Technology,Information Technology Services,16665400320,0
+FFIV,Technology,Software—Infrastructure,12923874304,0
+FIS,Technology,Information Technology Services,61580877824,0.015295617
+FISV,Technology,Information Technology Services,66615398400,0
+FLT,Technology,Software—Infrastructure,19488784384,0
+FTNT,Technology,Software—Infrastructure,54987472896,0
+GLW,Technology,Electronic Components,31779379200,0.025052192
+GPN,Industrials,Specialty Business Services,38737186816,0.0067312485
+HPE,Technology,Communication Equipment,22830336000,0.027334852
+HPQ,Technology,Computer Hardware,40912891904,0.020921448
+IBM,Technology,Information Technology Services,118430769152,0.04971957
+INTC,Technology,Semiconductors,209422958592,0.02660287
+INTU,Technology,Software—Application,133473124352,0.005233229
+IPGP,Technology,Semiconductor Equipment & Materials,6000151552,0
+IT,Technology,Information Technology Services,24813764608,0
+JKHY,Technology,Information Technology Services,14406982656,0.009300915
+JNPR,Technology,Communication Equipment,12157619200,0.02122579
+KEYS,Technology,Scientific & Technical Instruments,29263400960,0
+KLAC,Technology,Semiconductor Equipment & Materials,56340283392,0.01014753
+MA,Financial Services,Credit Services,356887166976,0.0049245
+MCHP,Technology,Semiconductors,42472148992,0.010679369
+MPWR,Technology,Semiconductors,22714994688,0.0046924492
+MSFT,Technology,Software—Infrastructure,2352967581696,0.0074823243
+MSI,Technology,Communication Equipment,40501362688,0.012267361
+MU,Technology,Semiconductors,88641789952,0
+NLOK,Technology,Software—Infrastructure,15820801024,0.01846381
+NOW,Technology,Software—Application,114797993984,0
+NTAP,Technology,Computer Hardware,19264942080,0.02246681
+NVDA,Technology,Semiconductors,690034769920,0.00055834727
+NXPI,Technology,Semiconductors,49181245440,0.011553867
+ORCL,Technology,Software—Infrastructure,222608703488,0.015185668
+PAYC,Technology,Software—Application,20909740032,0
+PAYX,Industrials,Staffing & Employment Services,49384026112,0.019618198
+PTC,Technology,Software—Application,12769989632,0
+PYPL,Financial Services,Credit Services,138040836096,0
+QRVO,Technology,Semiconductors,13817489408,0
+SEDG,Technology,Solar,17319950336,0
+SNPS,Technology,Software—Infrastructure,50919198720,0
+STX,Technology,Computer Hardware,20000710656,0.028937533
+SWKS,Technology,Semiconductors,22051923968,0.015111554
+TDY,Technology,Scientific & Technical Instruments,22125834240,0
+TEL,Technology,Electronic Components,44577779712,0.0144609995
+TER,Technology,Semiconductor Equipment & Materials,20362207232,0.0031905558
+TRMB,Technology,Scientific & Technical Instruments,18479405056,0
+TXN,Technology,Semiconductors,173118881792,0.022040732
+TYL,Technology,Software—Application,18358910976,0
+V,Financial Services,Credit Services,484972691456,0.006093284
+VRSN,Technology,Software—Infrastructure,24470292480,0
+WDC,Technology,Computer Hardware,15839909888,0
+ZBRA,Technology,Communication Equipment,23254228992,0
